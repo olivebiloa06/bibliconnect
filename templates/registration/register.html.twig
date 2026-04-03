@@ -1,0 +1,38 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Inscription — BiblioConnect{% endblock %}
+
+{% block body %}
+<div style="max-width:400px;margin:4rem auto;padding:2rem;border:1px solid #ddd;border-radius:8px">
+    <h1 style="margin-bottom:1.5rem">Créer un compte</h1>
+
+    {% for message in app.flashes('success') %}
+        <div style="color:green;margin-bottom:1rem">{{ message }}</div>
+    {% endfor %}
+
+    {{ form_start(registrationForm) }}
+
+        <div style="margin-bottom:1rem">
+            {{ form_label(registrationForm.email) }}
+            {{ form_widget(registrationForm.email, {'attr': {'style': 'width:100%;padding:8px;margin-top:4px;border:1px solid #ccc;border-radius:4px'}}) }}
+            {{ form_errors(registrationForm.email) }}
+        </div>
+
+        <div style="margin-bottom:1rem">
+            {{ form_label(registrationForm.plainPassword) }}
+            {{ form_widget(registrationForm.plainPassword, {'attr': {'style': 'width:100%;padding:8px;margin-top:4px;border:1px solid #ccc;border-radius:4px'}}) }}
+            {{ form_errors(registrationForm.plainPassword) }}
+        </div>
+
+        <button type="submit"
+                style="width:100%;padding:10px;background:#333;color:#fff;border:none;border-radius:4px;cursor:pointer">
+            S'inscrire
+        </button>
+
+    {{ form_end(registrationForm) }}
+
+    <p style="margin-top:1rem;text-align:center">
+        Déjà un compte ? <a href="{{ path('app_login') }}">Se connecter</a>
+    </p>
+</div>
+{% endblock %}

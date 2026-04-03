@@ -1,0 +1,26 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}BiblioConnect — Accueil{% endblock %}
+
+{% block body %}
+<div style="max-width: 900px; margin: 3rem auto; padding: 0 1rem;">
+    <h1>Bienvenue sur BiblioConnect</h1>
+    <p>Découvrez et réservez vos livres en ligne.</p>
+
+    <h2>Catalogue</h2>
+
+    {% if books is empty %}
+        <p>Aucun livre pour l'instant.</p>
+    {% else %}
+        <ul>
+        {% for book in books %}
+            <li>{{ book.titre }} — {{ book.auteur }}</li>
+        {% endfor %}
+        </ul>
+    {% endif %}
+
+    <hr>
+    <a href="{{ path('app_login') }}">Se connecter</a> |
+    <a href="{{ path('app_register') }}">S'inscrire</a>
+</div>
+{% endblock %}
