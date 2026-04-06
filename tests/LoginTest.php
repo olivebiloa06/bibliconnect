@@ -1,16 +1,39 @@
 <?php
 
-namespace App\Tests;
+namespace App\Tests\Unit;
 
-use Symfony\Component\Panther\PantherTestCase;
+use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
-class LoginTest extends PantherTestCase
+class LoginTest extends WebTestCase
 {
-    public function testSomething(): void
+    public function testLoginPageLoads(): void
     {
-        $client = static::createPantherClient();
-        $crawler = $client->request('GET', '/');
+        $client = static::createClient();
+        $client->request('GET', '/login');
+        $this->assertResponseIsSuccessful();
+        $this->assertSelectorExists('form');
+        $this->assertSelectorExists('input[name="_username"]');
+        $this->assertSelectorExists('input[name="_password"]');
+    }
 
-        $this->assertSelectorTextContains('h1', 'Hello World');
+    public function testLoginRedirectsAfterSuccess(): void
+    {
+        $client = static::createClient();
+        $client->request('POST', '/login', [
+            '_username' => 'admin@biblio.com',
+            '_password' => 'Admin1234',
+        ]);
+        $this->assertResponseRedirects();
+    }
+
+    public function testLoginFailsWithBadCredentials(): void
+    {
+        $client = static::createClient();
+        $client->request('POST', '/login', [
+            '_username' => 'faux@test.com',
+            '_password' => 'mauvais',
+        ]);
+        $client->followRedirect();
+        $this->assertSelectorExists('form');
     }
 }

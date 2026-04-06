@@ -1,20 +1,184 @@
 {% extends 'base.html.twig' %}
-
-{% block title %}Hello AdminController!{% endblock %}
-
+{% block title %}Dashboard Admin{% endblock %}
 {% block body %}
-<style>
-    .example-wrapper { margin: 1em auto; max-width: 800px; width: 95%; font: 18px/1.5 sans-serif; }
-    .example-wrapper code { background: #F5F5F5; padding: 2px 6px; }
-</style>
+<div style="max-width:1000px;margin:2rem auto;padding:0 1rem">
 
-<div class="example-wrapper">
-    <h1>Hello {{ controller_name }}! ✅</h1>
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;margin-bottom:1.5rem">
+        <h1 style="margin:0">Dashboard Admin</h1>
+        <a href="{{ path('app_logout') }}"
+           style="padding:8px 16px;background:#999;color:#fff;border-radius:4px;text-decoration:none">
+            Se déconnecter
+        </a>
+    </div>
 
-    This friendly message is coming from:
-    <ul>
-        <li>Your controller at <code><a href="{{ 'C:/Users/HP/bibliconnect/src/Controller/AdminController.php'|file_link(0) }}">src/Controller/AdminController.php</a></code></li>
-        <li>Your template at <code><a href="{{ 'C:/Users/HP/bibliconnect/templates/admin/index.html.twig'|file_link(0) }}">templates/admin/index.html.twig</a></code></li>
-    </ul>
+    {% for type, messages in app.flashes %}
+        {% for message in messages %}
+            <div style="padding:10px;border-radius:4px;margin-bottom:1rem;background:#d4edda;color:#155724">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endfor %}
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:1rem;margin-bottom:2rem">
+        <div style="background:#f5f5f5;padding:1.5rem;border-radius:8px;text-align:center">
+            <div style="font-size:2rem;font-weight:500">{{ users|length }}</div>
+            <div style="color:#666">Utilisateurs</div>
+        </div>
+        <div style="background:#f5f5f5;padding:1.5rem;border-radius:8px;text-align:center">
+            <div style="font-size:2rem;font-weight:500">{{ books|length }}</div>
+            <div style="color:#666">Livres</div>
+        </div>
+        <div style="background:#f5f5f5;padding:1.5rem;border-radius:8px;text-align:center">
+            <div style="font-size:2rem;font-weight:500">{{ reservations|length }}</div>
+            <div style="color:#666">Réservations</div>
+        </div>
+        <div style="background:#fff3cd;padding:1.5rem;border-radius:8px;text-align:center">
+            <div style="font-size:2rem;font-weight:500;color:#856404">{{ commentaires|length }}</div>
+            <div style="color:#856404">En attente</div>
+        </div>
+    </div>
+
+    <hr>
+
+    <h2>Catalogue
+        <a href="{{ path('book_new') }}"
+           style="font-size:14px;margin-left:12px;padding:6px 12px;background:#333;color:#fff;border-radius:4px;text-decoration:none">
+            + Ajouter
+        </a>
+    </h2>
+    <table style="width:100%;border-collapse:collapse;margin-bottom:2rem">
+        <thead>
+            <tr style="background:#f5f5f5">
+                <th style="padding:8px;border:1px solid #ddd;text-align:left">Titre</th>
+                <th style="padding:8px;border:1px solid #ddd;text-align:left">Auteur</th>
+                <th style="padding:8px;border:1px solid #ddd;text-align:left">Stock</th>
+                <th style="padding:8px;border:1px solid #ddd;text-align:left">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for book in books %}
+            <tr>
+                <td style="padding:8px;border:1px solid #ddd">{{ book.titre }}</td>
+                <td style="padding:8px;border:1px solid #ddd">{{ book.auteur }}</td>
+                <td style="padding:8px;border:1px solid #ddd">
+                    <span style="color:{{ book.stock > 0 ? 'green' : 'red' }}">{{ book.stock }}</span>
+                </td>
+                <td style="padding:8px;border:1px solid #ddd">
+                    <a href="{{ path('book_edit', {id: book.id}) }}"
+                       style="padding:4px 10px;background:#555;color:#fff;border-radius:4px;text-decoration:none;margin-right:4px">
+                        Modifier
+                    </a>
+                    <form method="post" action="{{ path('book_delete', {id: book.id}) }}"
+                          style="display:inline" onsubmit="return confirm('Supprimer ?')">
+                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ book.id) }}">
+                        <button type="submit"
+                                style="padding:4px 10px;background:red;color:#fff;border:none;border-radius:4px;cursor:pointer">
+                            Supprimer
+                        </button>
+                    </form>
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <hr>
+
+    <h2>Commentaires à modérer</h2>
+    {% if commentaires is empty %}
+        <p style="color:#666">Aucun commentaire en attente.</p>
+    {% else %}
+        {% for com in commentaires %}
+        <div style="border:1px solid #ddd;border-radius:8px;padding:1rem;margin-bottom:1rem">
+            <p style="margin:0 0 4px">
+                <strong>{{ com.book.titre }}</strong> —
+                <span style="color:#666">{{ com.user.email }}</span>
+            </p>
+            <div style="margin-bottom:6px">
+                {% for i in 1..5 %}
+                    <span style="color:{{ i <= com.note ? '#f5a623' : '#ddd' }}">★</span>
+                {% endfor %}
+            </div>
+            <p style="margin:0 0 10px">{{ com.contenu }}</p>
+            <a href="{{ path('admin_approuver_commentaire', {id: com.id}) }}"
+               style="padding:6px 12px;background:green;color:#fff;border-radius:4px;text-decoration:none;margin-right:8px">
+                Approuver
+            </a>
+            <a href="{{ path('admin_supprimer_commentaire', {id: com.id}) }}"
+               style="padding:6px 12px;background:red;color:#fff;border-radius:4px;text-decoration:none">
+                Supprimer
+            </a>
+        </div>
+        {% endfor %}
+    {% endif %}
+
+    <hr>
+
+    <h2>Historique des réservations</h2>
+    <table style="width:100%;border-collapse:collapse;margin-bottom:2rem">
+        <thead>
+            <tr style="background:#f5f5f5">
+                <th style="padding:8px;border:1px solid #ddd;text-align:left">Utilisateur</th>
+                <th style="padding:8px;border:1px solid #ddd;text-align:left">Livre</th>
+                <th style="padding:8px;border:1px solid #ddd;text-align:left">Du</th>
+                <th style="padding:8px;border:1px solid #ddd;text-align:left">Au</th>
+                <th style="padding:8px;border:1px solid #ddd;text-align:left">Statut</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for resa in toutesReservations %}
+            <tr>
+                <td style="padding:8px;border:1px solid #ddd">{{ resa.user.email }}</td>
+                <td style="padding:8px;border:1px solid #ddd">{{ resa.book.titre }}</td>
+                <td style="padding:8px;border:1px solid #ddd">{{ resa.dateDebut|date('d/m/Y') }}</td>
+                <td style="padding:8px;border:1px solid #ddd">{{ resa.dateFin|date('d/m/Y') }}</td>
+                <td style="padding:8px;border:1px solid #ddd">{{ resa.statut }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <hr>
+
+    <h2>Gestion des utilisateurs</h2>
+    <table style="width:100%;border-collapse:collapse">
+        <thead>
+            <tr style="background:#f5f5f5">
+                <th style="padding:8px;border:1px solid #ddd;text-align:left">Email</th>
+                <th style="padding:8px;border:1px solid #ddd;text-align:left">Nom</th>
+                <th style="padding:8px;border:1px solid #ddd;text-align:left">Rôle actuel</th>
+                <th style="padding:8px;border:1px solid #ddd;text-align:left">Changer</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for u in users %}
+            <tr>
+                <td style="padding:8px;border:1px solid #ddd">{{ u.email }}</td>
+                <td style="padding:8px;border:1px solid #ddd">{{ u.nom ?? '-' }}</td>
+                <td style="padding:8px;border:1px solid #ddd">
+                    <span style="padding:2px 8px;border-radius:12px;font-size:12px;background:#e9ecef">
+                        {{ u.roles|join(', ') }}
+                    </span>
+                </td>
+                <td style="padding:8px;border:1px solid #ddd">
+                    <form method="post" action="{{ path('admin_changer_role', {id: u.id}) }}"
+                          style="display:flex;gap:8px">
+                        <select name="role"
+                                style="padding:4px;border:1px solid #ccc;border-radius:4px;font-size:13px">
+                            <option value="ROLE_USER">Utilisateur</option>
+                            <option value="ROLE_LIBRARIAN">Bibliothécaire</option>
+                            <option value="ROLE_ADMIN">Admin</option>
+                        </select>
+                        <button type="submit"
+                                style="padding:4px 10px;background:#333;color:#fff;border:none;border-radius:4px;cursor:pointer;font-size:13px">
+                            Appliquer
+                        </button>
+                    </form>
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
 </div>
 {% endblock %}

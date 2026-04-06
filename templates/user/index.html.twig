@@ -2,25 +2,40 @@
 {% block title %}Mon profil{% endblock %}
 {% block body %}
 <div style="max-width:800px;margin:2rem auto;padding:0 1rem">
-    <h1>Bonjour {{ user.nom ?? user.email }}</h1>
-    <p style="color:#666">{{ user.email }}</p>
+
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap">
+        <div>
+            <h1 style="margin:0">{{ user.nom ?? user.email }}</h1>
+            <p style="color:#666;margin:4px 0 0">{{ user.email }}</p>
+        </div>
+        <a href="{{ path('app_logout') }}"
+           style="padding:8px 16px;background:#999;color:#fff;border-radius:4px;text-decoration:none">
+            Se déconnecter
+        </a>
+    </div>
 
     <div style="display:flex;gap:1rem;margin:1.5rem 0;flex-wrap:wrap">
         <a href="{{ path('book_index') }}"
            style="padding:10px 20px;background:#333;color:#fff;border-radius:4px;text-decoration:none">
             Voir le catalogue
         </a>
-        <a href="{{ path('app_logout') }}"
-           style="padding:10px 20px;background:#999;color:#fff;border-radius:4px;text-decoration:none">
-            Se déconnecter
-        </a>
     </div>
+
+    {% for type, messages in app.flashes %}
+        {% for message in messages %}
+            <div style="padding:10px;border-radius:4px;margin-bottom:1rem;
+                background:{{ type == 'error' ? '#fee' : '#efe' }};
+                color:{{ type == 'error' ? 'red' : 'green' }}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endfor %}
 
     <hr>
 
-    <h2>Mes réservations</h2>
+    <h2>Mes réservations ({{ user.reservations|length }})</h2>
     {% if user.reservations is empty %}
-        <p>Aucune réservation.</p>
+        <p style="color:#666">Aucune réservation.</p>
     {% else %}
         <table style="width:100%;border-collapse:collapse">
             <thead>
@@ -29,15 +44,33 @@
                     <th style="padding:8px;border:1px solid #ddd;text-align:left">Du</th>
                     <th style="padding:8px;border:1px solid #ddd;text-align:left">Au</th>
                     <th style="padding:8px;border:1px solid #ddd;text-align:left">Statut</th>
+                    <th style="padding:8px;border:1px solid #ddd;text-align:left">Action</th>
                 </tr>
             </thead>
             <tbody>
             {% for resa in user.reservations %}
                 <tr>
-                    <td style="padding:8px;border:1px solid #ddd">{{ resa.book.titre }}</td>
+                    <td style="padding:8px;border:1px solid #ddd">
+                        <a href="{{ path('book_show', {id: resa.book.id}) }}" style="color:#333">
+                            {{ resa.book.titre }}
+                        </a>
+                    </td>
                     <td style="padding:8px;border:1px solid #ddd">{{ resa.dateDebut|date('d/m/Y') }}</td>
                     <td style="padding:8px;border:1px solid #ddd">{{ resa.dateFin|date('d/m/Y') }}</td>
-                    <td style="padding:8px;border:1px solid #ddd">{{ resa.statut }}</td>
+                    <td style="padding:8px;border:1px solid #ddd">
+                        <span style="padding:2px 8px;border-radius:12px;font-size:12px;
+                            background:{{ resa.statut == 'en_attente' ? '#fff3cd' : '#d4edda' }};
+                            color:{{ resa.statut == 'en_attente' ? '#856404' : '#155724' }}">
+                            {{ resa.statut }}
+                        </span>
+                    </td>
+                    <td style="padding:8px;border:1px solid #ddd">
+                        <a href="{{ path('app_reservation_annuler', {id: resa.id}) }}"
+                           style="padding:4px 10px;background:red;color:#fff;border-radius:4px;text-decoration:none;font-size:12px"
+                           onclick="return confirm('Annuler cette réservation ?')">
+                            Annuler
+                        </a>
+                    </td>
                 </tr>
             {% endfor %}
             </tbody>
@@ -46,20 +79,30 @@
 
     <hr style="margin-top:2rem">
 
-    <h2>Mes favoris</h2>
+    <h2>Mes favoris ({{ user.favoris|length }})</h2>
     {% if user.favoris is empty %}
-        <p>Aucun favori.</p>
+        <p style="color:#666">Aucun favori.</p>
     {% else %}
-        <div style="display:flex;flex-wrap:wrap;gap:1rem">
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:1rem">
         {% for fav in user.favoris %}
-            <div style="border:1px solid #ddd;border-radius:8px;padding:1rem;width:180px">
-                <p style="font-weight:500;margin:0 0 4px">{{ fav.book.titre }}</p>
-                <p style="color:#666;font-size:13px;margin:0">{{ fav.book.auteur }}</p>
-                <a href="{{ path('book_show', {id: fav.book.id}) }}"
-                   style="display:block;margin-top:8px;font-size:13px;color:#333">Voir →</a>
+            <div style="border:1px solid #ddd;border-radius:8px;padding:1rem">
+                <p style="font-weight:500;margin:0 0 4px;font-size:14px">{{ fav.book.titre }}</p>
+                <p style="color:#666;font-size:12px;margin:0 0 8px">{{ fav.book.auteur }}</p>
+                <div style="display:flex;gap:6px">
+                    <a href="{{ path('book_show', {id: fav.book.id}) }}"
+                       style="flex:1;text-align:center;padding:4px;background:#333;color:#fff;border-radius:4px;text-decoration:none;font-size:12px">
+                        Voir
+                    </a>
+                    <a href="{{ path('app_favoris_supprimer', {id: fav.id}) }}"
+                       style="flex:1;text-align:center;padding:4px;background:#dc3545;color:#fff;border-radius:4px;text-decoration:none;font-size:12px"
+                       onclick="return confirm('Retirer des favoris ?')">
+                        Retirer
+                    </a>
+                </div>
             </div>
         {% endfor %}
         </div>
     {% endif %}
+
 </div>
 {% endblock %}
