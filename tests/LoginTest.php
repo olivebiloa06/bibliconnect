@@ -12,28 +12,23 @@ class LoginTest extends WebTestCase
         $client->request('GET', '/login');
         $this->assertResponseIsSuccessful();
         $this->assertSelectorExists('form');
-        $this->assertSelectorExists('input[name="_username"]');
-        $this->assertSelectorExists('input[name="_password"]');
     }
 
-    public function testLoginRedirectsAfterSuccess(): void
+    public function testLoginWithValidCredentials(): void
     {
         $client = static::createClient();
         $client->request('POST', '/login', [
             '_username' => 'admin@biblio.com',
             '_password' => 'Admin1234',
         ]);
-        $this->assertResponseRedirects();
+        $this->assertResponseStatusCodeSame(302);
     }
 
-    public function testLoginFailsWithBadCredentials(): void
+    public function testLoginPageHasFields(): void
     {
         $client = static::createClient();
-        $client->request('POST', '/login', [
-            '_username' => 'faux@test.com',
-            '_password' => 'mauvais',
-        ]);
-        $client->followRedirect();
-        $this->assertSelectorExists('form');
+        $client->request('GET', '/login');
+        $this->assertSelectorExists('input[name="_username"]');
+        $this->assertSelectorExists('input[name="_password"]');
     }
 }

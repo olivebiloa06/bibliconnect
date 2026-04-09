@@ -45,13 +45,11 @@ security:
     # Easy way to control access for large sections of your site
     # Note: Only the *first* access control that matches will be used
     access_control:
-        - { path: ^/admin, roles: ROLE_ADMIN }
-        - { path: ^/librarian, roles: ROLE_LIBRARIAN }
-        - { path: ^/profil, roles: ROLE_USER }
-        - { path: ^/reservation, roles: ROLE_USER }
-        # - { path: ^/admin, roles: ROLE_ADMIN }
-        # - { path: ^/profile, roles: ROLE_USER }
-
+    - { path: ^/user, roles: ROLE_USER }
+    - { path: ^/admin, roles: ROLE_ADMIN }
+    - { path: ^/librarian, roles: ROLE_LIBRARIAN }
+    - { path: ^/reservation, roles: ROLE_USER }
+    - { path: ^/favoris, roles: ROLE_USER }
 when@test:
     security:
         password_hashers:

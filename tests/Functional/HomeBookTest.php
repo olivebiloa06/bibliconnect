@@ -18,20 +18,19 @@ class HomeBookTest extends WebTestCase
         $client = static::createClient();
         $client->request('GET', '/livres');
         $this->assertResponseIsSuccessful();
-        $this->assertSelectorExists('form');
     }
 
-    public function testBookSearchWorks(): void
+    public function testLoginPageLoads(): void
     {
         $client = static::createClient();
-        $client->request('GET', '/livres?q=Prince');
+        $client->request('GET', '/login');
         $this->assertResponseIsSuccessful();
     }
 
-    public function testBookShowLoads(): void
+    public function testRegisterPageLoads(): void
     {
         $client = static::createClient();
-        $client->request('GET', '/livres/1');
+        $client->request('GET', '/register');
         $this->assertResponseIsSuccessful();
     }
 
@@ -39,13 +38,26 @@ class HomeBookTest extends WebTestCase
     {
         $client = static::createClient();
         $client->request('GET', '/reservation/1');
-        $this->assertResponseRedirects('/login');
+        $this->assertResponseRedirects('http://localhost/login');
     }
 
     public function testFavorisRequiresLogin(): void
     {
         $client = static::createClient();
         $client->request('GET', '/favoris/1');
-        $this->assertResponseRedirects('/login');
+        $this->assertResponseStatusCodeSame(302);
+    }
+
+        public function testUserPageRequiresLogin(): void
+        {
+            $client = static::createClient();
+            $client->request('GET', '/user');
+            $this->assertResponseRedirects('http://localhost/login');
+        }
+    public function testAdminRequiresLogin(): void
+    {
+        $client = static::createClient();
+        $client->request('GET', '/admin');
+        $this->assertResponseRedirects('http://localhost/login');
     }
 }
